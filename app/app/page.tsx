@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 type MenuItem = {
   name: string;
@@ -35,9 +34,12 @@ const menu: MenuItem[] = [
 ];
 
   export default function Home() {
-  const searchParams = useSearchParams();
-  const table = searchParams.get("table") || "";
+  const [table, setTable] = useState("");
 
+useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+  setTable(params.get("table") || "");
+}, []);
   // your existing code continues here
   const [cart, setCart] = useState<Record<string, number>>({});
 
