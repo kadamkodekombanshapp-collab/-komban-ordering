@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 type MenuItem = {
   name: string;
@@ -33,7 +34,11 @@ const menu: MenuItem[] = [
   { name: "Egg Bhurji", price: 50, category: "Egg" },
 ];
 
-export default function Home() {
+  export default function Home() {
+  const searchParams = useSearchParams();
+  const table = searchParams.get("table") || "";
+
+  // your existing code continues here
   const [cart, setCart] = useState<Record<string, number>>({});
 
   const changeQuantity = (name: string, change: number) => {
@@ -71,9 +76,10 @@ export default function Home() {
     );
 
     const message =
-      `Hello Komban Toddy Shop!\n\n` +
-      `I would like to order:\n\n${lines.join("\n")}` +
-      `\n\nTotal: ₹${total}`;
+  `🍽️ KOMBAN TODDY SHOP\n` +
+  `TABLE ${table || "N/A"}\n\n` +
+  `ORDER:\n${lines.join("\n")}` +
+  `\n\nTotal: ₹${total}`;
 
     window.open(
       `https://wa.me/917010204342?text=${encodeURIComponent(message)}`,
@@ -95,6 +101,11 @@ export default function Home() {
         <h1 className="text-4xl font-bold">Komban Toddy Shop</h1>
         <p className="mt-2 text-lg">Good Toddy • Better Food</p>
         <p className="mt-2">Kadamkode, Palakkad</p>
+        {table && (
+  <div className="mt-4 inline-block rounded-full bg-black px-5 py-2 font-bold text-white">
+    TABLE {table}
+  </div>
+)}
       </header>
 
       <section className="mx-auto max-w-5xl px-4 py-8">
