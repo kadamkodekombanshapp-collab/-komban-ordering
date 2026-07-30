@@ -7,6 +7,7 @@ type MenuItem = {
   name: string;
   price: number;
   category: string;
+  available?: boolean;
 };
 
 const menu: MenuItem[] = [
