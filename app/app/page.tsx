@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { supabase } from "../lib/supabase";
 
 type MenuItem = {
   name: string;
@@ -35,6 +36,32 @@ const menu: MenuItem[] = [
 
   export default function Home() {
   const [table, setTable] = useState("");
+ const [liveMenu, setLiveMenu] = useState<MenuItem[]>([]);
+
+useEffect(() => {
+  const loadMenu = async () => {
+    const { data, error } = await supabase
+      .from("menu_items")
+      .select("name, price, category, available");
+
+    if (error) {
+      console.error("Could not load menu:", error);
+      return;
+    }
+
+    setLiveMenu(
+      (data ?? [])
+        .filter((item) => item.available !== false)
+        .map((item) => ({
+          name: item.name,
+          price: item.price,
+          category: item.category,
+        }))
+    );
+  };
+
+  loadMenu();
+}, []);
 
 useEffect(() => {
   const params = new URLSearchParams(window.location.search);
@@ -89,7 +116,11 @@ useEffect(() => {
     );
   };
 
-  const categories = [...new Set(menu.map((item) => item.category))];
+  const categoryOrder = ["Specials", "Seafood", "Beef", "Chicken", "Sides", "Egg"];
+
+const categories = categoryOrder.filter((category) =>
+  liveMenu.some((item) => item.category === category)
+);
 
   return (
     <main className="min-h-screen bg-[#fffaf0] text-black">
@@ -116,15 +147,21 @@ useEffect(() => {
           Select your dishes and send your order directly through WhatsApp.
         </p>
 
-        {categories.map((category) => (
+        {categories
+  .filter((category) =>
+    liveMenu.some(
+      (item) => item.category === category && item.available !== false
+    )
+  )
+  .map((category) => (
           <div key={category} className="mb-10">
             <h3 className="mb-4 border-b-2 border-orange-400 pb-2 text-2xl font-bold">
               {category}
             </h3>
 
             <div className="grid gap-4 md:grid-cols-2">
-              {menu
-                .filter((item) => item.category === category)
+              {liveMenu
+                .filter((item) => item.category === category && item.available !== false)
                 .map((item) => {
                   const quantity = cart[item.name] || 0;
 
