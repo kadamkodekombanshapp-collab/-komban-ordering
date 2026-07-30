@@ -1,128 +1,189 @@
+"use client";
+
+import { useState } from "react";
+
+type MenuItem = {
+  name: string;
+  price: number;
+  category: string;
+};
+
+const menu: MenuItem[] = [
+  { name: "Duck Roast", price: 150, category: "Specials" },
+  { name: "Pork Fry", price: 150, category: "Specials" },
+  { name: "Crab Roast", price: 240, category: "Seafood" },
+  { name: "Beef Fry", price: 150, category: "Beef" },
+  { name: "Beef Roast", price: 160, category: "Beef" },
+  { name: "Beef Curry", price: 150, category: "Beef" },
+  { name: "Botti Fry", price: 70, category: "Specials" },
+  { name: "Naadan Kozhi", price: 150, category: "Chicken" },
+  { name: "Chicken Curry", price: 120, category: "Chicken" },
+  { name: "Chicken Roast", price: 140, category: "Chicken" },
+  { name: "Chicken Fry", price: 150, category: "Chicken" },
+  { name: "Chicken 65", price: 160, category: "Chicken" },
+  { name: "Pepper Chicken", price: 160, category: "Chicken" },
+  { name: "Kaada Fry", price: 140, category: "Specials" },
+  { name: "Kappa", price: 50, category: "Sides" },
+  { name: "Pathiri", price: 10, category: "Sides" },
+  { name: "Porotta", price: 15, category: "Sides" },
+  { name: "Chapathi", price: 15, category: "Sides" },
+  { name: "Appam", price: 15, category: "Sides" },
+  { name: "Idiyappam", price: 15, category: "Sides" },
+  { name: "Omelette", price: 40, category: "Egg" },
+  { name: "Egg Bhurji", price: 50, category: "Egg" },
+];
+
 export default function Home() {
+  const [cart, setCart] = useState<Record<string, number>>({});
+
+  const changeQuantity = (name: string, change: number) => {
+    setCart((current) => {
+      const quantity = Math.max((current[name] || 0) + change, 0);
+      const updated = { ...current };
+
+      if (quantity === 0) delete updated[name];
+      else updated[name] = quantity;
+
+      return updated;
+    });
+  };
+
+  const total = menu.reduce(
+    (sum, item) => sum + (cart[item.name] || 0) * item.price,
+    0
+  );
+
+  const itemCount = Object.values(cart).reduce((sum, qty) => sum + qty, 0);
+
+  const orderWhatsApp = () => {
+    const selected = menu.filter((item) => cart[item.name]);
+
+    if (!selected.length) {
+      alert("Please add something to your order.");
+      return;
+    }
+
+    const lines = selected.map(
+      (item) =>
+        `${item.name} x ${cart[item.name]} = ₹${
+          item.price * cart[item.name]
+        }`
+    );
+
+    const message =
+      `Hello Komban Toddy Shop!\n\n` +
+      `I would like to order:\n\n${lines.join("\n")}` +
+      `\n\nTotal: ₹${total}`;
+
+    window.open(
+      `https://wa.me/917010204342?text=${encodeURIComponent(message)}`,
+      "_blank"
+    );
+  };
+
+  const categories = [...new Set(menu.map((item) => item.category))];
+
   return (
-    <main className="min-h-screen bg-yellow-100 text-black">
+    <main className="min-h-screen bg-[#fffaf0] text-black">
+      <header className="bg-[#f5a623] px-5 py-10 text-center">
+        <img
+          src="/logo.jpg"
+          alt="Komban Toddy Shop"
+          className="mx-auto mb-4 w-44 rounded-xl shadow-lg"
+        />
 
-      {/* Header */}
-      <section className="bg-yellow-500 py-10 shadow-lg">
-        <div className="max-w-6xl mx-auto text-center px-6">
-          <img
-            src="/logo.jpg"
-            alt="Komban Toddy Shop"
-            className="mx-auto w-56 rounded-lg shadow-lg"
-          />
+        <h1 className="text-4xl font-bold">Komban Toddy Shop</h1>
+        <p className="mt-2 text-lg">Good Toddy • Better Food</p>
+        <p className="mt-2">Kadamkode, Palakkad</p>
+      </header>
 
-          <h1 className="text-5xl font-extrabold mt-6">
-            Komban Toddy Shop
-          </h1>
-
-          <p className="text-xl mt-3">
-            Good Toddy • Better Food
-          </p>
-
-          <div className="mt-8 flex justify-center gap-4 flex-wrap">
-            <a
-              href="tel:+917010204342"
-              className="bg-black text-white px-6 py-3 rounded-xl font-bold hover:bg-gray-800"
-            >
-              📞 Call Now
-            </a>
-
-            <a
-              href="https://wa.me/917010204342"
-              className="bg-green-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-green-700"
-            >
-              💬 WhatsApp
-            </a>
-          </div>
-        </div>
-      </section>
-
-      {/* About */}
-      <section className="max-w-6xl mx-auto py-16 px-6">
-        <h2 className="text-3xl font-bold mb-6">
-          Welcome to Komban Toddy Shop
-        </h2>
-
-        <p className="text-lg leading-8">
-          Experience authentic Kerala toddy and traditional food served fresh
-          every day. Enjoy delicious seafood, naadan dishes, duck roast,
-          beef fry, pork fry and much more in a beautiful Kerala atmosphere.
+      <section className="mx-auto max-w-5xl px-4 py-8">
+        <h2 className="mb-2 text-3xl font-bold">Order Food</h2>
+        <p className="mb-8 text-gray-600">
+          Select your dishes and send your order directly through WhatsApp.
         </p>
+
+        {categories.map((category) => (
+          <div key={category} className="mb-10">
+            <h3 className="mb-4 border-b-2 border-orange-400 pb-2 text-2xl font-bold">
+              {category}
+            </h3>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              {menu
+                .filter((item) => item.category === category)
+                .map((item) => {
+                  const quantity = cart[item.name] || 0;
+
+                  return (
+                    <div
+                      key={item.name}
+                      className="flex items-center justify-between rounded-2xl bg-white p-5 shadow"
+                    >
+                      <div>
+                        <h4 className="text-lg font-bold">{item.name}</h4>
+                        <p className="font-semibold text-orange-600">
+                          ₹{item.price}
+                        </p>
+                      </div>
+
+                      {quantity === 0 ? (
+                        <button
+                          onClick={() => changeQuantity(item.name, 1)}
+                          className="rounded-xl bg-black px-5 py-2 font-bold text-white"
+                        >
+                          ADD
+                        </button>
+                      ) : (
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => changeQuantity(item.name, -1)}
+                            className="h-9 w-9 rounded-full bg-gray-200 text-xl font-bold"
+                          >
+                            −
+                          </button>
+
+                          <span className="font-bold">{quantity}</span>
+
+                          <button
+                            onClick={() => changeQuantity(item.name, 1)}
+                            className="h-9 w-9 rounded-full bg-orange-500 text-xl font-bold text-white"
+                          >
+                            +
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+            </div>
+          </div>
+        ))}
       </section>
 
-      {/* Contact */}
-      <section className="bg-white py-16">
-        <div className="max-w-6xl mx-auto px-6">
+      {itemCount > 0 && (
+        <div className="sticky bottom-0 border-t bg-white p-4 shadow-2xl">
+          <div className="mx-auto flex max-w-5xl items-center justify-between gap-4">
+            <div>
+              <p className="font-bold">
+                {itemCount} {itemCount === 1 ? "item" : "items"}
+              </p>
+              <p className="text-xl font-bold">₹{total}</p>
+            </div>
 
-          <h2 className="text-3xl font-bold mb-8">
-            Contact Us
-          </h2>
-
-          <div className="space-y-4 text-lg">
-
-            <p>
-              📍 N.H. Bye-Pass Road,
-              Salem–Kanyakumari Highway,
-              Kadamkode,
-              Kalmandapam,
-              Palakkad,
-              Kerala – 678013
-            </p>
-
-            <p>📞 +91 7010204342</p>
-
-            <p>💬 WhatsApp: +91 7010204342</p>
-
-            <p>🕗 Open Daily: 8:00 AM – 8:00 PM</p>
-
+            <button
+              onClick={orderWhatsApp}
+              className="rounded-xl bg-green-600 px-6 py-3 font-bold text-white"
+            >
+              Order on WhatsApp
+            </button>
           </div>
         </div>
-      </section>
+      )}
 
-      {/* Menu */}
-      <section className="py-16 max-w-6xl mx-auto px-6">
-
-        <h2 className="text-3xl font-bold mb-8">
-          Our Popular Menu
-        </h2>
-
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-          {[
-            ["Duck Roast","₹150"],
-            ["Pork Fry","₹150"],
-            ["Beef Fry","₹150"],
-            ["Beef Roast","₹160"],
-            ["Chicken Roast","₹140"],
-            ["Chicken Fry","₹150"],
-            ["Chicken Curry","₹120"],
-            ["Crab Roast","₹240"],
-            ["Karimeen Pollichathu","₹250"],
-            ["Kappa","₹20"],
-            ["Porotta","₹15"],
-            ["Appam","₹15"]
-          ].map(([item,price])=>(
-            <div
-              key={item}
-              className="bg-white rounded-xl shadow-md p-6 hover:shadow-xl transition"
-            >
-              <h3 className="text-2xl font-bold">{item}</h3>
-              <p className="text-yellow-700 font-bold text-xl mt-2">
-                {price}
-              </p>
-            </div>
-          ))}
-
-        </div>
-
-      </section>
-
-      {/* Footer */}
-
-      <footer className="bg-black text-white py-8 text-center">
-        © 2026 Komban Toddy Shop • All Rights Reserved
+      <footer className="bg-black px-4 py-8 text-center text-white">
+        © 2026 Komban Toddy Shop • Kadamkode, Palakkad
       </footer>
-
     </main>
   );
 }
