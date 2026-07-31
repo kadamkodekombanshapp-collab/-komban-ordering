@@ -26,6 +26,10 @@ const initialMenu: MenuItem[] = [
 
 export default function AdminPage() {
   const [menu, setMenu] = useState(initialMenu);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+const [password, setPassword] = useState("");
+const [loginError, setLoginError] = useState("");
+
   useEffect(() => {
   const savedMenu = localStorage.getItem("kombanMenu");
 
@@ -41,6 +45,14 @@ export default function AdminPage() {
 useEffect(() => {
   localStorage.setItem("kombanMenu", JSON.stringify(menu));
 }, [menu]);
+const handleLogin = () => {
+  if (password === "Komban@2026") {
+    setIsLoggedIn(true);
+    setLoginError("");
+  } else {
+    setLoginError("Incorrect password");
+  }
+};
 
   const changePrice = (index: number, price: number) => {
     setMenu((current) =>
@@ -73,6 +85,41 @@ useEffect(() => {
     )
   );
 };
+if (!isLoggedIn) {
+  return (
+    <main className="min-h-screen bg-yellow-400 flex items-center justify-center p-6 text-black">
+      <div className="w-full max-w-md rounded-2xl bg-black p-8 text-white shadow-xl">
+        <h1 className="text-3xl font-black text-center">KOMBAN ADMIN</h1>
+
+        <p className="mt-2 text-center text-gray-300">
+          Restaurant Control Panel
+        </p>
+
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") handleLogin();
+          }}
+          placeholder="Enter admin password"
+          className="mt-8 w-full rounded-xl bg-white p-4 text-black"
+        />
+
+        {loginError && (
+          <p className="mt-3 text-red-400">{loginError}</p>
+        )}
+
+        <button
+          onClick={handleLogin}
+          className="mt-4 w-full rounded-xl bg-yellow-400 p-4 font-bold text-black"
+        >
+          LOGIN
+        </button>
+      </div>
+    </main>
+  );
+}
   return (
     <main className="min-h-screen bg-yellow-400 p-6 text-black">
       <div className="mx-auto max-w-4xl">
