@@ -45,12 +45,28 @@ const [loginError, setLoginError] = useState("");
 useEffect(() => {
   localStorage.setItem("kombanMenu", JSON.stringify(menu));
 }, [menu]);
-const handleLogin = () => {
-  if (password === "Komban@2026") {
-    setIsLoggedIn(true);
-    setLoginError("");
-  } else {
-    setLoginError("Incorrect password");
+const handleLogin = async () => {
+  setLoginError("");
+
+  try {
+    const response = await fetch("/api/admin-login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ password }),
+    });
+
+    const data = await response.json();
+
+    if (response.ok && data.success) {
+      setIsLoggedIn(true);
+      setPassword("");
+    } else {
+      setLoginError(data.error || "Incorrect password");
+    }
+  } catch {
+    setLoginError("Login failed. Please try again.");
   }
 };
 
