@@ -4,47 +4,40 @@ import { useEffect, useState } from "react";
 import { supabase } from "../../lib/supabase";
 
 type MenuItem = {
+  id: number;
   name: string;
+  category: string;
   price: number;
   available: boolean;
 };
 
-const initialMenu: MenuItem[] = [
-  { name: "Duck Roast", price: 150, available: true },
-  { name: "Pork Fry", price: 150, available: true },
-  { name: "Crab Roast", price: 240, available: true },
-  { name: "Beef Fry", price: 150, available: true },
-  { name: "Beef Roast", price: 160, available: true },
-  { name: "Beef Curry", price: 150, available: true },
-  { name: "Botti Fry", price: 70, available: true },
-  { name: "Naadan Kozhi", price: 150, available: true },
-  { name: "Chicken Curry", price: 120, available: true },
-  { name: "Chicken Roast", price: 140, available: true },
-  { name: "Chicken Fry", price: 150, available: true },
-  { name: "Chicken 65", price: 160, available: true },
-];
-
 export default function AdminPage() {
-  const [menu, setMenu] = useState(initialMenu);
+  const [menu, setMenu] = useState<MenuItem[]>([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-const [password, setPassword] = useState("");
-const [loginError, setLoginError] = useState("");
+  const [password, setPassword] = useState("");
+  const [loginError, setLoginError] = useState("");
 
-  useEffect(() => {
-  const savedMenu = localStorage.getItem("kombanMenu");
+  const [newName, setNewName] = useState("");
+  const [newPrice, setNewPrice] = useState("");
+  const [newCategory, setNewCategory] = useState("Specials");
 
-  if (savedMenu) {
-    try {
-      setMenu(JSON.parse(savedMenu));
-    } catch {
-      console.error("Could not load saved menu");
+ useEffect(() => {
+  const loadMenu = async () => {
+    const { data, error } = await supabase
+      .from("menu_items")
+      .select("*")
+      .order("id");
+
+    if (error) {
+      console.error(error);
+      return;
     }
-  }
-}, []);
 
-useEffect(() => {
-  localStorage.setItem("kombanMenu", JSON.stringify(menu));
-}, [menu]);
+    setMenu(data || []);
+  };
+
+  loadMenu();
+}, []);
 const handleLogin = async () => {
   setLoginError("");
 
@@ -70,13 +63,29 @@ const handleLogin = async () => {
   }
 };
 
-  const changePrice = (index: number, price: number) => {
-    setMenu((current) =>
-      current.map((item, i) =>
-        i === index ? { ...item, price } : item
-      )
-    );
-  };
+  const changePrice = async (index: number, price: number) => {
+  const item = menu[index];
+
+  const { error } = await supabase
+    .from("menu_items")
+    .update({ price })
+    .eq("id", item.id);
+
+  if (error) {
+    console.log(error);
+alert(JSON.stringify(error));
+    alert("Could not update price.");
+    return;
+  }
+
+  setMenu((current) =>
+    current.map((menuItem, i) =>
+      i === index
+        ? { ...menuItem, price }
+        : menuItem
+    )
+  );
+};
 
   const toggleAvailability = async (index: number) => {
   const item = menu[index];
@@ -176,9 +185,9 @@ if (!isLoggedIn) {
                       type="number"
                       min="0"
                       value={item.price}
-                      onChange={(e) =>
-                        changePrice(index, Number(e.target.value))
-                      }
+                      onBlur={(e) =>
+  changePrice(index, Number(e.target.value))
+}
                       className="w-24 rounded-lg border border-gray-300 p-2"
                     />
                   </div>
